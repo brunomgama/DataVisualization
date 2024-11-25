@@ -27,48 +27,6 @@
         "nullable": false,
         "metadata": {}
       },
-        {
-            "name": "Produktname",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "Preis",
-            "type": "string",
-            "nullable": false,
-            "metadata": {}
-        },
-        {
-            "name": "Kapazität",
-            "type": "monetary",
-            "nullable": false,
-            "metadata": {
-              "currency": "EUR"
-            }
-        },
-        {
-            "name": "Rabattfähig",
-            "type": "string",
-            "nullable": false,
-            "metadata": {
-              "values": [
-                {
-                  "Ja": true,
-                  "Nein": false
-                }]
-            }
-        }
-    ]
-  },
-  "write_schema": {
-    "fields": [
-      {
-        "name": "Typ",
-        "type": "string",
-        "nullable": false,
-        "metadata": {}
-      },
       {
         "name": "Produktname",
         "type": "string",
@@ -79,19 +37,29 @@
         "name": "Preis",
         "type": "string",
         "nullable": false,
-        "metadata": {}
+        "metadata": {
+          "sensitive_information": true
+        }
       },
       {
         "name": "Kapazität",
-        "type": "number",
+        "type": "monetary",
         "nullable": false,
-        "metadata": {}
+        "metadata": {
+          "currency": "EUR"
+        }
       },
       {
         "name": "Rabattfähig",
-        "type": "boolean",
+        "type": "string",
         "nullable": false,
-        "metadata": {}
+        "metadata": {
+          "transform_values": [
+            {
+              "Ja": true,
+              "Nein": false
+            }]
+        }
       }
     ]
   }

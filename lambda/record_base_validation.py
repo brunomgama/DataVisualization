@@ -64,7 +64,9 @@ def validate_primary_keys(metadata, rows):
 
     return True
 
-def convert_csv_to_parquet(rows, output_s3_key, output_bucket_name, primary_keys, remove_duplicates):
+def convert_csv_to_parquet(rows, output_s3_key, output_bucket_name, metadata, remove_duplicates):
+    primary_keys = metadata.get("record_validation").get("primary_key")
+
     print("PK", primary_keys)
     columns = rows[0]
     data = rows[1:]
@@ -77,6 +79,8 @@ def convert_csv_to_parquet(rows, output_s3_key, output_bucket_name, primary_keys
 
     if remove_duplicates:
         df = df.drop_duplicates(subset=primary_keys, keep='first')
+
+    df = check_read_schema(metadata, df)
 
     parquet_buffer = BytesIO()
 
@@ -101,6 +105,27 @@ def convert_csv_to_parquet(rows, output_s3_key, output_bucket_name, primary_keys
 
     return True
 
+def check_read_schema(metadata, df):
+    fields = metadata.get("read_schema", {}).get("fields", [])
+
+    for field in fields:
+        column_name = field.get("name")
+        column_type = field.get("type")
+        column_metadata = field.get("metadata", {})
+
+        if column_metadata.get("sensitive_information", False) and column_name in df.columns:
+            print(f"Removing sensitive column: {column_name}")
+            df = df.drop(columns=[column_name])
+            continue
+
+        if "values" in column_metadata and column_name in df.columns:
+            value_mapping = column_metadata["values"][0]
+            df[column_name] = df[column_name].map(value_mapping).fillna(df[column_name])
+
+        if column_type == "monetary" and column_name in df.columns:
+            df[column_name] = df[column_name].str.replace("EUR", "").str.replace(",", "").astype(float)
+
+    return df
 
 def lambda_handler(event, context):
     status = event.get("status")
@@ -127,7 +152,7 @@ def lambda_handler(event, context):
             policy = metadata.get("record_validation").get("duplicates") == "remove"
             print(f"Policy: {policy}")
 
-            if convert_csv_to_parquet(rows, file_name.replace(".csv", ".parquet"), landing_bucket_name, metadata.get("record_validation").get("primary_key"), policy):
+            if convert_csv_to_parquet(rows, file_name.replace(".csv", ".parquet"), landing_bucket_name, metadata, policy):
                 return {
                     "status": "success",
                     "message": "CSV file validated and converted to Parquet successfully."
