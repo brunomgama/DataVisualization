@@ -9,7 +9,7 @@
   },
   "record_validation": {
     "header": true,
-    "duplicates": "warn",
+    "duplicates": "remove",
     "primary_key": ["Typ", "Produktname"],
     "column_names": [
       "Typ",

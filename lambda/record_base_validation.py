@@ -1,17 +1,16 @@
 import os
 import json
 import csv
+import re
 import boto3
 import pandas as pd
-from io import StringIO
+from io import StringIO, BytesIO
 from botocore.exceptions import ClientError
 
-# Get bucket names from environment variables
 landing_bucket_name = os.getenv('LANDING_BUCKET_NAME')
 metadata_bucket_name = os.getenv('METADATA_BUCKET_NAME')
 output_bucket_name = os.getenv('OUTPUT_BUCKET_NAME')
 
-# Create S3 client
 s3_client = boto3.client('s3')
 
 def get_metadata(metadata_bucket, metadata_file):
@@ -28,7 +27,6 @@ def validate_header(metadata, rows):
         print(f"CSV header mismatch. {rows[0]} has incorrect column values.")
 
 def validate_primary_keys(metadata, rows):
-    """Validate for duplicate primary key values."""
     primary_keys = metadata.get("primary_key")
 
     if not primary_keys:
@@ -52,48 +50,61 @@ def validate_primary_keys(metadata, rows):
             seen_keys.add(pk_values)
 
     if duplicates:
-        if metadata.get("duplicates") == "fail":
+        policy = metadata.get("duplicates")
+        if policy == "fail":
             return False
-        elif metadata.get("duplicates") == "warn":
+        elif policy == "warn":
             duplicate_details = "; ".join([f"Row {idx}: {values}" for idx, values in duplicates])
             print(f"Duplicate primary keys found: {duplicate_details}")
-        elif metadata.get("duplicates") == "ignore":
-            print("Duplicate primary keys found but ignoring.")
+        elif policy == "ignore" or policy == "remove":
+            print(f"Founded duplicated primary keys but policy is {policy}")
         else:
             print("Invalid 'duplicates' value in metadata.")
             return False
 
     return True
 
-def convert_csv_to_parquet(rows, output_s3_key):
-    """Convert CSV rows to Parquet and upload it to S3."""
-    # Convert the CSV rows to a Pandas DataFrame
-    df = pd.DataFrame(rows[1:], columns=rows[0])  # rows[0] is the header
+def convert_csv_to_parquet(rows, output_s3_key, output_bucket_name, primary_keys, remove_duplicates):
+    print("PK", primary_keys)
+    columns = rows[0]
+    data = rows[1:]
 
-    # Write DataFrame to Parquet (using pyarrow for parquet support)
-    parquet_buffer = StringIO()
-    df.to_parquet(parquet_buffer, engine='pyarrow')
+    df = pd.DataFrame(data, columns=columns)
 
-    # Reset buffer position
-    parquet_buffer.seek(0)
+    for col in df.columns:
+        if df[col].dtype == object:
+            df[col] = df[col].apply(lambda x: re.sub('[^a-zA-Z0-9 ]', '', str(x)))
 
-    # Upload the Parquet file to S3
+    if remove_duplicates:
+        df = df.drop_duplicates(subset=primary_keys, keep='first')
+
+    parquet_buffer = BytesIO()
+
     try:
+        df.to_parquet(parquet_buffer, engine='pyarrow')
+        parquet_buffer.seek(0)
+    except Exception as e:
+        print(f"Error writing DataFrame to Parquet: {e}")
+        return False
+
+    try:
+        print("Parquet has been done")
         s3_client.put_object(
             Bucket=output_bucket_name,
-            Key=output_s3_key,
+            Key="parquet/"+output_s3_key,
             Body=parquet_buffer.getvalue()
         )
         print(f"Parquet file successfully uploaded to s3://{output_bucket_name}/{output_s3_key}")
     except ClientError as e:
         print(f"Error uploading Parquet file to S3: {e}")
         return False
+
     return True
 
 
 def lambda_handler(event, context):
-    status = "exists"
-    file_name = "data_visualization/DataVisualization.csv"
+    status = event.get("status")
+    file_name = event.get("file_name")
 
     metadata = get_metadata(metadata_bucket_name, 'metadata.json')
 
@@ -113,7 +124,10 @@ def lambda_handler(event, context):
                     "message": "Primary key validation failed."
                 }
 
-            if convert_csv_to_parquet(rows, file_name.replace(".csv", ".parquet")):
+            policy = metadata.get("record_validation").get("duplicates") == "remove"
+            print(f"Policy: {policy}")
+
+            if convert_csv_to_parquet(rows, file_name.replace(".csv", ".parquet"), landing_bucket_name, metadata.get("record_validation").get("primary_key"), policy):
                 return {
                     "status": "success",
                     "message": "CSV file validated and converted to Parquet successfully."

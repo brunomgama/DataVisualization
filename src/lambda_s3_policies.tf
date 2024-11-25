@@ -25,7 +25,7 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
-# Attach permissions to Lambda
+# TODO: This permissions can be lower since we do not need to put objects on the metadata bucket
 resource "aws_iam_policy" "lambda_s3_policy" {
   name        = "dv_lambda_s3_policy"
   description = "Policy to allow Lambda to access S3"
@@ -36,7 +36,8 @@ resource "aws_iam_policy" "lambda_s3_policy" {
       {
         Action   = [
           "s3:ListBucket",
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:PutObject"
         ],
         Effect   = "Allow",
         Resource = [

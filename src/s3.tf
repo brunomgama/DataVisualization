@@ -1,7 +1,6 @@
 locals {
   landing_bucket = "dv-landing-bucket"
   metadata_bucket = "dv-metadata-bucket"
-  script_bucket = "dv-script-bucket"
 }
 
 ##################################################

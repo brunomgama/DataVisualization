@@ -58,19 +58,16 @@ def lambda_handler(event, context):
         }
 
     try:
-        # Fetch the file from the landing bucket
         response = s3_client.get_object(Bucket=landing_bucket_name, Key=file_name)
         file_content = response["Body"].read().decode("utf-8-sig")
         file_type = response.get('ContentType')
 
-        # Validate the file type
         validate_file_type(metadata, file_name, file_type)
 
-        # Validate the file content
         validate_csv_content(metadata.get("file_validation"), file_content)
 
         return {
-            "status": "success",
+            "status": "exists",
             "file_name": file_name,
             "file_type": file_type,
             "message": "File type and CSV content validated successfully."

@@ -7,6 +7,7 @@ resource "aws_lambda_function" "check_file_lambda" {
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "file_checker.lambda_handler"
   runtime          = "python3.9"
+  timeout          =  900
 
   environment {
     variables = {
@@ -25,6 +26,7 @@ resource "aws_lambda_function" "fbv_lambda" {
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "file_base_validation.lambda_handler"
   runtime          = "python3.9"
+  timeout          =  900
 
   environment {
     variables = {
@@ -43,10 +45,14 @@ resource "aws_lambda_function" "rbv_lambda" {
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "record_base_validation.lambda_handler"
   runtime          = "python3.9"
+  timeout          =  900
+
+  layers = ["arn:aws:lambda:eu-west-1:336392948345:layer:AWSSDKPandas-Python39:26"]
 
   environment {
     variables = {
       LANDING_BUCKET_NAME  = aws_s3_bucket.landing_bucket.bucket
+      METADATA_BUCKET_NAME = aws_s3_bucket.metadata_bucket.bucket
       METADATA_BUCKET_NAME = aws_s3_bucket.metadata_bucket.bucket
     }
   }
