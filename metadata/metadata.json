@@ -1,0 +1,98 @@
+{
+  "file_path": "data_visualization",
+  "file_pattern": "DataVisualization",
+  "file_validation": {
+    "file_type": "csv",
+    "multiple_records": true,
+    "separator": ";",
+    "column_quantity": 5
+  },
+  "record_validation": {
+    "header": true,
+    "duplicates": "warn",
+    "primary_key": ["Typ", "Produktname"],
+    "column_names": [
+      "Typ",
+      "Produktname",
+      "Preis",
+      "Kapazität",
+      "Rabattfähig"
+    ]
+  },
+  "read_schema": {
+    "fields": [
+      {
+        "name": "Typ",
+        "type": "string",
+        "nullable": false,
+        "metadata": {}
+      },
+        {
+            "name": "Produktname",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "Preis",
+            "type": "string",
+            "nullable": false,
+            "metadata": {}
+        },
+        {
+            "name": "Kapazität",
+            "type": "monetary",
+            "nullable": false,
+            "metadata": {
+              "currency": "EUR"
+            }
+        },
+        {
+            "name": "Rabattfähig",
+            "type": "string",
+            "nullable": false,
+            "metadata": {
+              "values": [
+                {
+                  "Ja": true,
+                  "Nein": false
+                }]
+            }
+        }
+    ]
+  },
+  "write_schema": {
+    "fields": [
+      {
+        "name": "Typ",
+        "type": "string",
+        "nullable": false,
+        "metadata": {}
+      },
+      {
+        "name": "Produktname",
+        "type": "string",
+        "nullable": false,
+        "metadata": {}
+      },
+      {
+        "name": "Preis",
+        "type": "string",
+        "nullable": false,
+        "metadata": {}
+      },
+      {
+        "name": "Kapazität",
+        "type": "number",
+        "nullable": false,
+        "metadata": {}
+      },
+      {
+        "name": "Rabattfähig",
+        "type": "boolean",
+        "nullable": false,
+        "metadata": {}
+      }
+    ]
+  }
+}
