@@ -1,0 +1,42 @@
+{
+  "file_path": "finance",
+  "file_pattern": "Finance",
+  "file_validation": {
+    "file_type": "csv",
+    "multiple_records": true,
+    "separator": ";",
+    "column_quantity": 3
+  },
+  "record_validation": {
+    "header": true,
+    "duplicates": "ignore",
+    "primary_key": ["Category"],
+    "column_names": [
+      "Category",
+      "Account",
+      "Value"
+    ]
+  },
+  "read_schema": {
+    "fields": [
+      {
+        "name": "Category",
+        "type": "string",
+        "nullable": false,
+        "metadata": {}
+      },
+      {
+        "name": "Account",
+        "type": "string",
+        "nullable": false,
+        "metadata": {}
+      },
+      {
+        "name": "Value",
+        "type": "double",
+        "nullable": false,
+        "metadata": {}
+      }
+    ]
+  }
+}

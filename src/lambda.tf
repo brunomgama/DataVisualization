@@ -53,7 +53,7 @@ resource "aws_lambda_function" "rbv_lambda" {
     variables = {
       LANDING_BUCKET_NAME  = aws_s3_bucket.landing_bucket.bucket
       METADATA_BUCKET_NAME = aws_s3_bucket.metadata_bucket.bucket
-      METADATA_BUCKET_NAME = aws_s3_bucket.metadata_bucket.bucket
+      OUTPUT_BUCKET_NAME = aws_s3_bucket.main_bucket.bucket
     }
   }
 }

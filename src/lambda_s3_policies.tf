@@ -44,7 +44,9 @@ resource "aws_iam_policy" "lambda_s3_policy" {
           aws_s3_bucket.landing_bucket.arn,
           "${aws_s3_bucket.landing_bucket.arn}/*",
           aws_s3_bucket.metadata_bucket.arn,
-          "${aws_s3_bucket.metadata_bucket.arn}/*"
+          "${aws_s3_bucket.metadata_bucket.arn}/*",
+          aws_s3_bucket.main_bucket.arn,
+          "${aws_s3_bucket.main_bucket.arn}/*"
         ]
       }
     ]

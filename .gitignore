@@ -3,4 +3,4 @@ start.sh
 terraform.tfstate
 terraform.tfstate.backup
 .terraform.lock.hcl
-test_data/DataVisualization.csv
+test_data/*
