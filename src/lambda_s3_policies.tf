@@ -15,8 +15,8 @@ resource "aws_iam_role" "lambda_execution_role" {
     Version = "2012-10-17",
     Statement = [
       {
-        Action    = "sts:AssumeRole",
-        Effect    = "Allow",
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -34,12 +34,12 @@ resource "aws_iam_policy" "lambda_s3_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Action   = [
+        Action = [
           "s3:ListBucket",
           "s3:GetObject",
           "s3:PutObject"
         ],
-        Effect   = "Allow",
+        Effect = "Allow",
         Resource = [
           aws_s3_bucket.landing_bucket.arn,
           "${aws_s3_bucket.landing_bucket.arn}/*",
