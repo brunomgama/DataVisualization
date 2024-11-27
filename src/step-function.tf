@@ -36,9 +36,9 @@ resource "aws_iam_policy" "step_function_policy" {
         Effect = "Allow"
         Action = "lambda:InvokeFunction"
         Resource = [
-          "arn:aws:lambda:eu-west-1:${var.account_id}:function:dv_check_file_in_s3:$LATEST",
-          "arn:aws:lambda:eu-west-1:${var.account_id}:function:dv_file_base_validation:$LATEST",
-          "arn:aws:lambda:eu-west-1:${var.account_id}:function:dv_record_base_validation:$LATEST"
+          aws_lambda_function.check_file_lambda.arn,
+          aws_lambda_function.fbv_lambda.arn,
+          aws_lambda_function.rbv_lambda.arn
         ],
       },
       {
@@ -46,8 +46,9 @@ resource "aws_iam_policy" "step_function_policy" {
         Effect = "Allow"
         Action = "s3:ListBucket"
         Resource = [
-          "arn:aws:s3:::dv-landing-bucket",
-          "arn:aws:s3:::dv-metadata-bucket"
+          aws_s3_bucket.landing_bucket.arn,
+          aws_s3_bucket.metadata_bucket.arn,
+          aws_s3_bucket.main_bucket.arn
         ]
       },
       {
@@ -55,8 +56,20 @@ resource "aws_iam_policy" "step_function_policy" {
         Effect = "Allow"
         Action = "s3:GetObject"
         Resource = [
-          "arn:aws:s3:::dv-landing-bucket/*",
-          "arn:aws:s3:::dv-metadata-bucket/*"
+          "${aws_s3_bucket.landing_bucket.arn}/*",
+          "${aws_s3_bucket.metadata_bucket.arn}/*",
+          "${aws_s3_bucket.main_bucket.arn}/*"
+        ]
+      },
+      {
+        Sid    = "GlueCrawlerPermission"
+        Effect = "Allow"
+        Action = [
+          "glue:StartCrawler",
+          "glue:GetCrawler",
+        ],
+        Resource = [
+          aws_glue_crawler.crawler.arn
         ]
       }
     ]

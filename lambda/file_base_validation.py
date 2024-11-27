@@ -110,27 +110,14 @@ def process_file(record):
 
 def lambda_handler(event, context):
     """Main Lambda handler."""
-    try:
-        # Parse the body to get the list of records
-        records = json.loads(event.get("body", "[]"))
-        results = []
+    # Parse the body to get the list of records
+    results = []
 
-        for record in records:
-            # Process each record
-            result = process_file(record)
-            results.append(result)
+    # Process each record
+    result = process_file(event)
+    results.append(result)
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps(results)
-        }
-
-    except Exception as e:
-        print(f"Unexpected error during processing: {e}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "status": "error",
-                "message": f"Unexpected error: {e}"
-            })
-        }
+    return {
+        "statusCode": 200,
+        "body": json.dumps(results)
+    }

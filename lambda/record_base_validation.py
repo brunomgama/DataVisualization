@@ -152,7 +152,7 @@ def check_read_schema(metadata, df):
 def lambda_handler(event, context):
     """Main Lambda handler."""
     try:
-        records = json.loads(event.get("body", "[]"))
+        records = json.loads(event.get("validationResult").get("body", "[]"))
 
         results = []
 
